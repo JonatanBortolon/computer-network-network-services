@@ -1,4 +1,7 @@
-import { execSync } from 'child_process';
+import { spawnSync } from 'child_process';
+import os from 'os';
+import servicesCommands from '../constants/servicesCommands';
+import Apache from './Apache';
 
 /**
  * Types
@@ -7,15 +10,19 @@ import { IDataGetServicesReturn } from '../types/data';
 
 class Data {
   static getServices(): IDataGetServicesReturn {
+    const actualOs = os.platform();
+    const apacheInstance = Apache.getInstance();
     let services: IDataGetServicesReturn = [];
 
-    const servicesHandler = execSync(
-      'Get-Service -Name Apache*,mysql | select-object status, name',
-      {
-        shell: 'powershell.exe',
-      }
+    const servicesHandler = spawnSync(
+      servicesCommands[actualOs],
+      actualOs === 'win32'
+        ? {
+            shell: 'powershell.exe',
+          }
+        : {}
     )
-      .toString()
+      .stdout.toString()
       .replace(/\r\n/g, ' ')
       .replace(/[\r\n]/g, ' ')
       .split(' ')
@@ -27,6 +34,14 @@ class Data {
         name: servicesHandler[i + 1],
         status: servicesHandler[i],
       });
+    }
+
+    if (
+      !apacheInstance.isNgrokActive() &&
+      services.filter((e) => e.name.indexOf('Apache') !== -1)[0].status ===
+        'Running'
+    ) {
+      apacheInstance.startNgrok();
     }
 
     return services;

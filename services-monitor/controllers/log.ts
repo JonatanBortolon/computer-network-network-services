@@ -15,7 +15,7 @@ class Log {
         '='.repeat(process.stdout.columns) +
         'Services Informations\n\n\n' +
         services
-          .map((e, index) => [e.name + ': ' + e.status])
+          .map((e) => e.name + ': ' + e.status)
           .join()
           .replace(',', '\n') +
         '\n\n\n' +
