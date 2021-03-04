@@ -7,9 +7,9 @@ const screen = blessed.screen({
 
 process.stdout.write('\x1Bc');
 setInterval(() => {
-  Log.services(screen);
+  screen.append(Log.mainScreen());
 
-  screen.key(['escape', 'q', 'C-c'], function (ch, key) {
+  screen.key(['escape', 'q', 'C-c'], () => {
     return process.exit(0);
   });
 
